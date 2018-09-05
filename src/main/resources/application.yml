@@ -1,0 +1,24 @@
+kafka:
+  brokers:
+  group: triage
+
+server:
+  port:
+
+spring:
+  application.name: kafka-triage
+  jackson:
+    default-property-inclusion: always
+  profiles.active: dev
+
+---
+
+spring.profiles: dev
+
+kafka:
+  brokers: localhost:9092
+
+logging.level:
+  com.fasterxml.jackson: DEBUG
+  org.apache.kafka.clients.consumer.KafkaConsumer: TRACE
+  org.apache.kafka.clients.producer.KafkaProducer: TRACE
