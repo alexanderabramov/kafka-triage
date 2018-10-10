@@ -9,6 +9,7 @@ import org.apache.kafka.clients.producer.ProducerConfig
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.util.*
+import java.util.regex.Pattern
 
 @Configuration
 class KafkaConfig(
@@ -34,7 +35,10 @@ class KafkaConfig(
         configs[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = "org.apache.kafka.common.serialization.StringDeserializer"
         configs[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = "org.apache.kafka.common.serialization.StringDeserializer"
 
-        return KafkaConsumer(configs)
+        val consumer = KafkaConsumer<String, String>(configs)
+        consumer.subscribe(Pattern.compile("^error-.*"))
+        consumer.poll(5000) // necessary to trigger subscription
+        return consumer
     }
 
     @Bean

@@ -1,7 +1,7 @@
 buildscript {
     ext {
         kotlinVersion = '1.2.61'
-        springBootVersion = '2.0.4.RELEASE'
+        springBootVersion = '2.0.5.RELEASE'
     }
     repositories {
         mavenCentral()
@@ -22,7 +22,7 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
 group = 'org.kafkatriage'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.2-SNAPSHOT'
 
 sourceCompatibility = 1.8
 compileKotlin {
@@ -42,34 +42,48 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    all*.exclude module : 'spring-boot-starter-logging'
+}
 
 dependencies {
     ext {
-        kafkaVersion = '2.0.0'
-        springKafkaVersion = '2.1.9.RELEASE'
-
-        mockitoKotlinVersion = '1.6.0'
         jUnitVersion = '5.2.0'
+        kafkaVersion = '2.0.0'
+        log4jVersion = '2.11.1'
+        mockitoKotlinVersion = '1.6.0'
+        springKafkaVersion = '2.1.10.RELEASE'
     }
 
-    compile('com.fasterxml.jackson.module:jackson-module-kotlin')
+    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
 
-    compile("org.apache.kafka:kafka-clients:${kafkaVersion}")
+    implementation 'io.micrometer:micrometer-core'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
 
-    compile("org.jetbrains.kotlin:kotlin-reflect")
-    compile("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation "org.apache.kafka:kafka-clients:${kafkaVersion}"
 
-    compile('org.springframework.boot:spring-boot-starter-actuator')
-    compile('org.springframework.boot:spring-boot-starter-web')
-//    compile("org.springframework.kafka:spring-kafka:${springKafkaVersion}")
+    implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
+    implementation "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
+
+    implementation 'org.jetbrains.kotlin:kotlin-reflect'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
 
     // Test
-    testCompile("com.nhaarman:mockito-kotlin:${mockitoKotlinVersion}")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${jUnitVersion}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${jUnitVersion}")
-    testCompile('org.springframework.boot:spring-boot-starter-test') {
+    testImplementation "org.apache.kafka:kafka_2.11:${kafkaVersion}:test"
+    testImplementation "org.apache.kafka:kafka-clients:${kafkaVersion}:test"
+    testImplementation "com.nhaarman:mockito-kotlin:${mockitoKotlinVersion}"
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${jUnitVersion}"
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude module: 'junit'
     }
+    testImplementation "org.springframework.kafka:spring-kafka-test:${springKafkaVersion}"
+
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jUnitVersion}"
 }
 
 dependencyManagement {

@@ -1,6 +1,6 @@
 package org.kafkatriage.topics
 
-import org.apache.kafka.clients.admin.AdminClient
+import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -8,12 +8,13 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/topics")
 class TopicController(
-        val kafkaAdminClient: AdminClient
+        val kafkaConsumer: KafkaConsumer<String, String>
 ) {
 
     @GetMapping("/")
     fun list(): List<Topic> {
-        val topics = kafkaAdminClient.listTopics().listings().get()
-        return topics.map { tl -> Topic(tl.name()) }
+        val assignedPartitions = kafkaConsumer.assignment()
+        val endOffsets = kafkaConsumer.endOffsets(assignedPartitions)
+        return assignedPartitions.map { Topic(it.topic(), endOffsets[it]!! - kafkaConsumer.committed(it).offset()) }
     }
 }
