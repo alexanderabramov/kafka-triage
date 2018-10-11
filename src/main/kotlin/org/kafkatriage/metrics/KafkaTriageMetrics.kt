@@ -6,6 +6,7 @@ import io.micrometer.core.instrument.binder.MeterBinder
 import io.micrometer.core.lang.NonNullApi
 import io.micrometer.core.lang.NonNullFields
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.common.TopicPartition
 import org.apache.logging.log4j.LogManager
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
@@ -35,12 +36,18 @@ class KafkaTriageMetrics(
             if (logger.isDebugEnabled) {
                 logger.debug("Registering gauge " + name + " " + tags.stream().map { it.toString() }.collect(Collectors.joining(",")))
             }
-            registry.gauge(name, tags, kafkaConsumer) { kafkaConsumer.endOffsets(listOf(topicPartition))[topicPartition]!! - kafkaConsumer.committed(topicPartition).offset().toDouble() }
+            registry.gauge(name, tags, kafkaConsumer) { getLag(kafkaConsumer, topicPartition) }
         }
     }
 
     companion object {
         private const val TOPIC = "topic"
         private const val PARTITION = "partition"
+
+        fun getLag(kafkaConsumer: KafkaConsumer<String, String>, topicPartition: TopicPartition): Double {
+            val endOffset = kafkaConsumer.endOffsets(listOf(topicPartition))[topicPartition] ?: 0
+            val committedOffset = kafkaConsumer.committed(topicPartition)?.offset() ?: 0
+            return endOffset - committedOffset.toDouble()
+        }
     }
 }

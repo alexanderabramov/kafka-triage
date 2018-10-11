@@ -15,6 +15,8 @@ class TopicController(
     fun list(): List<Topic> {
         val assignedPartitions = kafkaConsumer.assignment()
         val endOffsets = kafkaConsumer.endOffsets(assignedPartitions)
-        return assignedPartitions.map { Topic(it.topic(), endOffsets[it]!! - kafkaConsumer.committed(it).offset()) }
+        return assignedPartitions.map {
+            Topic(it.topic(), (endOffsets[it] ?: 0) - (kafkaConsumer.committed(it)?.offset() ?: 0))
+        }
     }
 }
