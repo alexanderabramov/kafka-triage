@@ -4,6 +4,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.consumer.OffsetAndMetadata
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.TopicPartition
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -20,7 +21,7 @@ class RecordController(
     fun list(@PathVariable topic: String): List<Record> {
         val partitions = kafkaConsumer.assignment().filter { it.topic() == topic }
         for (partition in partitions) {
-            kafkaConsumer.seek(partition, kafkaConsumer.committed(partition)?.offset() ?: 0)
+            seekToOffsetOrBeginning(partition)
         }
         val records = kafkaConsumer.poll(Duration.ofMillis(1000)).filter { it.topic() == topic }
         return records.map { r -> Record(r.partition(), r.offset(), r.key(), r.value(), r.headers().map { h -> Pair<String, String>(h.key(), h.value().toString(UTF_8)) }) }
@@ -49,7 +50,7 @@ class RecordController(
             return false
         }
 
-        kafkaConsumer.seek(topicPartition, kafkaConsumer.committed(topicPartition)?.offset() ?: 0)
+        seekToOffsetOrBeginning(topicPartition)
         // poll might return less records if you are asking for too many. In the typical case should be ok.
         val records = kafkaConsumer.poll(Duration.ofMillis(1000)).filter { it.offset() <= offset }
         if (records.isEmpty()) {
@@ -65,5 +66,14 @@ class RecordController(
         kafkaConsumer.commitSync(mapOf(Pair(topicPartition, OffsetAndMetadata(lastOffset + 1))))
 
         return true
+    }
+
+    fun seekToOffsetOrBeginning(partition: TopicPartition?) {
+        val offset = kafkaConsumer.committed(partition)?.offset()
+        if (offset != null) {
+            kafkaConsumer.seek(partition, offset)
+        } else {
+            kafkaConsumer.seekToBeginning(listOf(partition))
+        }
     }
 }
