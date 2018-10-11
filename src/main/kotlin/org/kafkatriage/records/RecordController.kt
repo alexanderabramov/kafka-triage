@@ -20,7 +20,7 @@ class RecordController(
     fun list(@PathVariable topic: String): List<Record> {
         val partitions = kafkaConsumer.assignment().filter { it.topic() == topic }
         for (partition in partitions) {
-            kafkaConsumer.seek(partition, kafkaConsumer.committed(partition).offset())
+            kafkaConsumer.seek(partition, kafkaConsumer.committed(partition)?.offset() ?: 0)
         }
         val records = kafkaConsumer.poll(Duration.ofMillis(1000)).filter { it.topic() == topic }
         return records.map { r -> Record(r.partition(), r.offset(), r.key(), r.value(), r.headers().map { h -> Pair<String, String>(h.key(), h.value().toString(UTF_8)) }) }
@@ -32,7 +32,7 @@ class RecordController(
     @PostMapping("/topics/{topic}/records/{partition}/{offset}/discard")
     fun discard(@PathVariable topic: String, @PathVariable partition: Int, @PathVariable offset: Long): Boolean {
         val topicPartition = kafkaConsumer.assignment().firstOrNull { it.topic() == topic && it.partition() == partition }
-        if (topicPartition == null || kafkaConsumer.committed(topicPartition).offset() > offset) {
+        if (topicPartition == null || kafkaConsumer.committed(topicPartition)?.offset() ?: 0 > offset) {
             return false
         }
         kafkaConsumer.commitSync(mapOf(Pair(topicPartition, OffsetAndMetadata(offset + 1))))
@@ -45,11 +45,11 @@ class RecordController(
     @PostMapping("/topics/{topic}/records/{partition}/{offset}/retry")
     fun retry(@PathVariable topic: String, @PathVariable partition: Int, @PathVariable offset: Long): Boolean {
         val topicPartition = kafkaConsumer.assignment().firstOrNull { it.topic() == topic && it.partition() == partition }
-        if (topicPartition == null || kafkaConsumer.committed(topicPartition).offset() > offset) {
+        if (topicPartition == null || kafkaConsumer.committed(topicPartition)?.offset() ?: 0 > offset) {
             return false
         }
 
-        kafkaConsumer.seek(topicPartition, kafkaConsumer.committed(topicPartition).offset())
+        kafkaConsumer.seek(topicPartition, kafkaConsumer.committed(topicPartition)?.offset() ?: 0)
         // poll might return less records if you are asking for too many. In the typical case should be ok.
         val records = kafkaConsumer.poll(Duration.ofMillis(1000)).filter { it.offset() <= offset }
         if (records.isEmpty()) {
