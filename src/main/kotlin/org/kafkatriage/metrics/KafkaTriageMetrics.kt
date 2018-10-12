@@ -8,6 +8,7 @@ import io.micrometer.core.lang.NonNullFields
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.TopicPartition
 import org.apache.logging.log4j.LogManager
+import org.kafkatriage.committedOrBeginning
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 import java.util.stream.Collectors
@@ -46,7 +47,7 @@ class KafkaTriageMetrics(
 
         fun getLag(kafkaConsumer: KafkaConsumer<String, String>, topicPartition: TopicPartition): Double {
             val endOffset = kafkaConsumer.endOffsets(listOf(topicPartition))[topicPartition] ?: 0
-            val committedOffset = kafkaConsumer.committed(topicPartition)?.offset() ?: 0
+            val committedOffset = kafkaConsumer.committedOrBeginning(topicPartition)
             return endOffset - committedOffset.toDouble()
         }
     }

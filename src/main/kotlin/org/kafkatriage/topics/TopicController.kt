@@ -1,6 +1,7 @@
 package org.kafkatriage.topics
 
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.kafkatriage.committedOrBeginning
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -16,7 +17,9 @@ class TopicController(
         val assignedPartitions = kafkaConsumer.assignment()
         val endOffsets = kafkaConsumer.endOffsets(assignedPartitions)
         return assignedPartitions.map {
-            Topic(it.topic(), (endOffsets[it] ?: 0) - (kafkaConsumer.committed(it)?.offset() ?: 0))
+            Topic(it.topic(), (endOffsets[it] ?: 0) - kafkaConsumer.committedOrBeginning(it))
         }
     }
+
 }
+
