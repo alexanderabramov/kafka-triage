@@ -20,7 +20,7 @@ class RecordController(
     fun list(@PathVariable topic: String): List<Record> {
         val partitions = kafkaConsumer.assignment().filter { it.topic() == topic }
         for (partition in partitions) {
-            kafkaConsumer.seek(partition, kafkaConsumer.committed(partition).offset())
+            kafkaConsumer.seek(partition, (kafkaConsumer.committed(partition)?.offset() ?: 0))
         }
         val records = kafkaConsumer.poll(Duration.ofMillis(1000)).filter { it.topic() == topic }
         return records.map { r -> Record(r.partition(), r.offset(), r.key(), r.value(), r.headers().map { h -> Pair<String, String>(h.key(), h.value().toString(UTF_8)) }) }

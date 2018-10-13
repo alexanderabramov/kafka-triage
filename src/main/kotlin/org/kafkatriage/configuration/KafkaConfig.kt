@@ -8,6 +8,7 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import java.time.Duration
 import java.util.*
 import java.util.regex.Pattern
 
@@ -37,7 +38,7 @@ class KafkaConfig(
 
         val consumer = KafkaConsumer<String, String>(configs)
         consumer.subscribe(Pattern.compile("^error-.*"))
-        consumer.poll(5000) // necessary to trigger subscription
+        consumer.poll(Duration.ofMillis(5000)) // necessary to trigger subscription
         return consumer
     }
 
