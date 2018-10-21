@@ -1,0 +1,28 @@
+spring.profiles: dev
+
+logging.level:
+  org.kafkatriage: DEBUG
+  org.apache.kafka.clients.consumer.KafkaConsumer: DEBUG
+  org.apache.kafka.clients.consumer.internals.ConsumerCoordinator: DEBUG
+  org.apache.kafka.clients.producer.KafkaProducer: DEBUG
+
+management:
+  endpoints.web.exposure.include: "*"
+
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    initialization-mode: always
+    url: jdbc:h2:mem:db/kafka-triage;MODE=PostgreSQL
+    username: sa
+    password:
+    platform: h2
+  flyway:
+    enabled: false
+  h2.console.enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+  kafka:
+    bootstrap-servers: 127.0.0.1:9092

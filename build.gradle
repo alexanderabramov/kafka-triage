@@ -1,19 +1,21 @@
 buildscript {
     ext {
-        kotlinVersion = '1.2.61'
+        kotlinVersion = '1.2.71'
         springBootVersion = '2.0.5.RELEASE'
     }
     repositories {
         mavenCentral()
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
-        classpath("org.jetbrains.kotlin:kotlin-allopen:${kotlinVersion}")
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+        classpath "org.jetbrains.kotlin:kotlin-allopen:$kotlinVersion"
+        classpath "org.jetbrains.kotlin:kotlin-noarg:$kotlinVersion"
     }
 }
 
 apply plugin: 'kotlin'
+apply plugin: 'kotlin-jpa'
 apply plugin: 'kotlin-spring'
 
 apply plugin: 'idea'
@@ -22,7 +24,7 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
 group = 'org.kafkatriage'
-version = '0.0.2-SNAPSHOT'
+version = '0.1.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
 compileKotlin {
@@ -43,15 +45,18 @@ repositories {
 }
 
 configurations {
-    all*.exclude module : 'spring-boot-starter-logging'
+    all*.exclude module: 'spring-boot-starter-logging'
 }
 
 dependencies {
     ext {
+        jaxbGlassfishVersion = '2.3.1'
         jUnitVersion = '5.2.0'
         kafkaVersion = '2.0.0'
         log4jVersion = '2.11.1'
+        mockitoVersion = '2.23.0'
         mockitoKotlinVersion = '1.6.0'
+        springFrameworkVersion = '5.1.1.RELEASE'
         springKafkaVersion = '2.1.10.RELEASE'
     }
 
@@ -60,38 +65,60 @@ dependencies {
     implementation 'io.micrometer:micrometer-core'
     implementation 'io.micrometer:micrometer-registry-prometheus'
 
-    implementation "org.apache.kafka:kafka-clients:${kafkaVersion}"
+    implementation "org.apache.kafka:kafka-clients:$kafkaVersion"
 
-    implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
-    implementation "org.apache.logging.log4j:log4j-core:${log4jVersion}"
-    implementation "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
+    implementation "org.apache.logging.log4j:log4j-api:$log4jVersion"
+    implementation "org.apache.logging.log4j:log4j-core:$log4jVersion"
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
+
+    implementation 'org.flywaydb:flyway-core'
 
     implementation 'org.jetbrains.kotlin:kotlin-reflect'
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
 
+    implementation "org.springframework:spring-core:$springFrameworkVersion" // illegal reflective access in 5.0.x
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
-    // Test
-    testImplementation "org.apache.kafka:kafka_2.11:${kafkaVersion}:test"
-    testImplementation "org.apache.kafka:kafka-clients:${kafkaVersion}:test"
-    testImplementation "com.nhaarman:mockito-kotlin:${mockitoKotlinVersion}"
+    implementation "org.springframework.kafka:spring-kafka:$springKafkaVersion"
 
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${jUnitVersion}"
+    runtime "org.glassfish.jaxb:jaxb-runtime:$jaxbGlassfishVersion"
+
+    runtime 'com.h2database:h2'
+
+    runtime 'org.postgresql:postgresql'
+
+    // Test
+    testImplementation "com.nhaarman:mockito-kotlin:$mockitoKotlinVersion"
+
+    testImplementation "org.apache.kafka:kafka_2.11:$kafkaVersion:test"
+    testImplementation "org.apache.kafka:kafka-clients:$kafkaVersion:test"
+
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit5"
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$jUnitVersion"
+
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude module: 'junit'
     }
-    testImplementation "org.springframework.kafka:spring-kafka-test:${springKafkaVersion}"
+    testImplementation "org.springframework.kafka:spring-kafka-test:$springKafkaVersion"
 
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jUnitVersion}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$jUnitVersion"
 }
 
 dependencyManagement {
     imports {
-        mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
+        mavenBom "org.springframework.boot:spring-boot-dependencies:$springBootVersion"
     }
 }
 
 test {
     useJUnitPlatform()
+}
+
+bootRun {
+    environment SPRING_PROFILES_ACTIVE: environment.SPRING_PROFILES_ACTIVE ?: "dev"
 }

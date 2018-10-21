@@ -1,6 +1,4 @@
-kafka:
-  brokers:
-  group: triage
+logging.level:
 
 management:
   endpoints.web.exposure.include: health,prometheus
@@ -10,20 +8,26 @@ server:
 
 spring:
   application.name: kafka-triage
+  datasource:
+    driver-class-name:
+    url:
+    username:
+    password:
   jackson:
     default-property-inclusion: always
-  profiles.active: dev
-
----
-
-spring.profiles: dev
-
-kafka:
-  brokers: 127.0.0.1:9092
-
-logging.level:
-  com.fasterxml.jackson: DEBUG
-  org.apache.kafka.clients.consumer.KafkaConsumer: DEBUG
-  org.apache.kafka.clients.consumer.internals.ConsumerCoordinator: DEBUG
-  org.apache.kafka.clients.consumer.internals.Fetcher: DEBUG
-  org.apache.kafka.clients.producer.KafkaProducer: DEBUG
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  kafka:
+    ack-mode: record
+    bootstrap-servers:
+    consumer:
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      group-id: triage
+    producer:
+      properties:
+        linger.ms: 1
+  profiles.active:

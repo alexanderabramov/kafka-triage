@@ -1,30 +1,22 @@
 package org.kafkatriage.records
 
-import org.apache.kafka.clients.consumer.KafkaConsumer
-import org.apache.kafka.clients.consumer.OffsetAndMetadata
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
-import org.kafkatriage.seekToCommittedOrBeginning
+import org.apache.kafka.clients.producer.RecordMetadata
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
-import java.time.Duration
-import kotlin.text.Charsets.UTF_8
+import java.util.concurrent.Future
 
 @RestController
 class RecordController(
-        val kafkaConsumer: KafkaConsumer<String, String>,
-        val kafkaProducer: KafkaProducer<String, String>
+        val recordRepository: RecordRepository,
+        private val kafkaProducer: KafkaProducer<String, String>
 ) {
     @GetMapping("/topics/{topic}/records")
     fun list(@PathVariable topic: String): List<Record> {
-        val partitions = kafkaConsumer.assignment().filter { it.topic() == topic }
-        for (partition in partitions) {
-            kafkaConsumer.seekToCommittedOrBeginning(partition)
-        }
-        val records = kafkaConsumer.poll(Duration.ofMillis(1000)).filter { it.topic() == topic }
-        return records.map { r -> Record(r.partition(), r.offset(), r.key(), r.value(), r.headers().map { h -> Pair<String, String>(h.key(), h.value().toString(UTF_8)) }) }
+        return recordRepository.findByTopicAndTriaged(topic)
     }
 
     /**
@@ -32,40 +24,51 @@ class RecordController(
      */
     @PostMapping("/topics/{topic}/records/{partition}/{offset}/discard")
     fun discard(@PathVariable topic: String, @PathVariable partition: Int, @PathVariable offset: Long): Boolean {
-        val topicPartition = kafkaConsumer.assignment().firstOrNull { it.topic() == topic && it.partition() == partition }
-        if (topicPartition == null || kafkaConsumer.committed(topicPartition)?.offset() ?: 0 > offset) {
-            return false
-        }
-        kafkaConsumer.commitSync(mapOf(Pair(topicPartition, OffsetAndMetadata(offset + 1))))
+        recordRepository.markTriagedTo(topic, partition, offset)
         return true
     }
 
     /**
-     * move records up to and including specified offset to the corresponding retry topic
+     * Move records up to and including specified offset to the corresponding retry topic.
+     *
+     * Potential outcomes:
+     * - records produced on retry topic, DB updated with triaged=true and replayedOffset; all good
+     * - for some DB records triaged=true && replayedOffset=null; need to review exceptions
+     *  and verify if the records were in fact replayed
      */
-    @PostMapping("/topics/{topic}/records/{partition}/{offset}/retry")
-    fun retry(@PathVariable topic: String, @PathVariable partition: Int, @PathVariable offset: Long): Boolean {
-        val topicPartition = kafkaConsumer.assignment().firstOrNull { it.topic() == topic && it.partition() == partition }
-        if (topicPartition == null || kafkaConsumer.committed(topicPartition)?.offset() ?: 0 > offset) {
-            return false
+    @PostMapping("/topics/{topic}/records/{partition}/{offset}/replay")
+    fun replay(@PathVariable topic: String, @PathVariable partition: Int, @PathVariable offset: Long): ReplayResult {
+        val retryTopic = topic.replaceFirst("error-", "retry-")
+
+        val recordsToReplay = recordRepository.findUnTriagedTo(topic, partition, offset)
+        recordRepository.markTriagedTo(topic, partition, offset)
+
+        val sendFutures = ArrayList<Future<RecordMetadata>>(recordsToReplay.count())
+        for (i in recordsToReplay.indices) {
+            val record = recordsToReplay[i]
+            val producerRecord = ProducerRecord(retryTopic, 0, record.timestamp, record.key, record.value,
+                    record.headers.map(Header::toKafkaHeader))
+            sendFutures.add(i, kafkaProducer.send(producerRecord))
         }
 
-        kafkaConsumer.seekToCommittedOrBeginning(topicPartition)
-        // poll might return less records if you are asking for too many. In the typical case should be ok.
-        val records = kafkaConsumer.poll(Duration.ofMillis(1000)).filter { it.offset() <= offset }
-        if (records.isEmpty()) {
-            throw Exception("could not get any records up to offset $offset")
+        val replayed = mutableListOf<ReplayResult.ReplayedRecord>()
+        val errors = mutableListOf<ReplayResult.RecordWithError>()
+        for (i in sendFutures.indices) {
+            val record = recordsToReplay[i]
+            try {
+                val metadata = sendFutures[i].get()
+                if (metadata.hasOffset()) {
+                    val replayedOffset = metadata.offset()
+                    recordRepository.setReplayedOffset(record.id!!, replayedOffset)
+                    replayed.add(ReplayResult.ReplayedRecord(record.offset, replayedOffset))
+                }
+
+            } catch (ex: Exception) {
+                errors.add(ReplayResult.RecordWithError(record.offset, ex))
+            }
         }
-        val lastOffset = records.maxBy { it.offset() }!!.offset()
-
-        val retryTopic = topic.replace("error-", "retry-")
-        records.forEach {
-            kafkaProducer.send(ProducerRecord(retryTopic, 0, it.timestamp(), it.key(), it.value(), it.headers()))
-        }
-
-        kafkaConsumer.commitSync(mapOf(Pair(topicPartition, OffsetAndMetadata(lastOffset + 1))))
-
-        return true
+        recordRepository.flush()
+        // return 202 if there are some errors?
+        return ReplayResult(replayed, errors)
     }
-
 }
