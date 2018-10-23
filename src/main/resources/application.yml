@@ -1,5 +1,3 @@
-logging.level:
-
 management:
   endpoints.web.exposure.include: health,prometheus
 
@@ -27,7 +25,9 @@ spring:
       auto-offset-reset: earliest
       enable-auto-commit: false
       group-id: triage
+      value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
     producer:
       properties:
         linger.ms: 1
+      value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
   profiles.active:

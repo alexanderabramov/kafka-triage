@@ -9,15 +9,15 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 interface RecordRepository : JpaRepository<Record, UUID> {
-    @Query("select new org.kafkatriage.topics.Topic(r.topic, count(*)) from Record r group by r.topic")
+    @Query("select new org.kafkatriage.topics.Topic(r.topic, count(*)) from Record r where triaged=false group by r.topic")
     fun listTopics(): List<Topic>
 
-    @Query("select new org.kafkatriage.topics.TopicPartition(r.topic, r.partition, count(*)) from Record r group by r.topic, r.partition")
+    @Query("select new org.kafkatriage.topics.TopicPartition(r.topic, r.partition, count(*)) from Record r where triaged=false group by r.topic, r.partition")
     fun listPartitions(): List<TopicPartition>
 
     fun findByTopicAndTriaged(topic: String, triaged: Boolean = false): List<Record>
 
-    @Query("select r from Record r where topic=:topic and partition=:partition and offset<=:offset")
+    @Query("select r from Record r where topic=:topic and partition=:partition and offset<=:offset and triaged=false")
     fun findUnTriagedTo(topic: String, partition: Int, offset: Long): List<Record>
 
     @Modifying
