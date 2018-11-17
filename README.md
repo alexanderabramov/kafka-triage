@@ -1,4 +1,4 @@
-# kafka-triage
+# kafka-triage ![build status](https://travis-ci.org/alexanderabramov/kafka-triage.svg?branch=master)
 Triage records in Kafka dead letter queue (DLQ) topics
 
 ## Database setup on GCP Kubernetes

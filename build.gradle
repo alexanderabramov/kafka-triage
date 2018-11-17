@@ -45,7 +45,7 @@ repositories {
 }
 
 configurations {
-    all{
+    all {
         exclude group: 'junit', module: 'junit'
         exclude module: 'spring-boot-starter-logging'
     }
@@ -119,6 +119,10 @@ dependencyManagement {
 
 test {
     useJUnitPlatform()
+
+    testLogging {
+        events "passed", "failed"
+    }
 }
 
 bootRun {
