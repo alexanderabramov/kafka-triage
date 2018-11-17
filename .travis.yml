@@ -4,6 +4,9 @@ dist: xenial
 
 jdk: openjdk11
 
+services:
+- docker
+
 before_cache:
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
 - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
@@ -14,14 +17,25 @@ cache:
   - "$HOME/.gradle/wrapper/"
 
 after_success:
-- mv build/libs/kafka-triage-*.jar kafka-triage-$TRAVIS_TAG.jar
+- export SNAPSHOT_VERSION=$(grep -oP "version = '\K[-.0-9a-zA-Z]*" settings.gradle)
+- mv build/libs/kafka-triage-*.jar build/libs/kafka-triage-$TRAVIS_TAG.jar
 
 deploy:
-  provider: releases
+  - provider: releases
     api_key:
       secure: HdkxEFNq/PKfD+e/tbCWB9Xa9q6HiHB2KZygsn/YRkqnMBnGVpIkS9TK8aEB07XWU0p/QEivbxebE84WTXE1tOXXSVzITkd9rZ6kDTUaHegV3w9E3duvLH7hwV5xzSiWw/05bV12a6pZ60xRJSCxdEdFfENsMxZH1uEP2eBJ+ON7gCVSJP27h1uuCmeP/025OqU8gAO5uUBI8YqaZ7hsKoDh0+sZuuQcCgMRL0GpCVmpklJ5G3ec1kQgymfyK+l2x3mREQdZFtfMfNypUgx0MGDKGRZHpyXM5Rjft9JGzYcwQS5vJxE7EBm3CqhD0lO6QW/6OTGDISd14MynDhHep2LVTYRpUf9CJCP2K/zBognUOzumM8Xv03G0Orzo1ig8e+9lPfWLWJ4jypa/hNZZC+qw5x9ASAA1cmBnNo8seEKGCxJiw/QZIF/LneCXEELwMrI5dtiZv8s783rEVC9PseM/MX0eHB3qiHoFeH2bQHCDLjbSv8DNsudwo+563YcbNv2g1oKgfprRM0gTDirK6whUkpcbk9ps6TWP/6ezR3eEkfGM3jOjLL1GAD7twDaCHLcs1K9YBpIN1FK5H1Rc9KN2n8jQru2F4Fncb1GpxpToDNHodSrU78PKu44YuaOqarPVnEdR4OqHS1RW7rFRdExSm3Xqhd19pk/aYLV5Zlk=
-    file: kafka-triage-$TRAVIS_TAG.jar
+    file: build/libs/kafka-triage-$TRAVIS_TAG.jar
     file_glob: true
     on:
       tags: true
+    skip_cleanup: true
+  - provider: script
+    on:
+      tags: true
+    script: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin && docker build -t kafkatriage/kafka-triage:$TRAVIS_TAG . && docker push kafkatriage/kafka-triage
+    skip_cleanup: true
+  - provider: script
+    on:
+      branch: master
+    script: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin && docker build -t kafkatriage/kafka-triage:$SNAPSHOT_VERSION . && docker push kafkatriage/kafka-triage
     skip_cleanup: true
