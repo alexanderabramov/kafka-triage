@@ -1,5 +1,5 @@
 rootProject.name = 'kafka-triage'
 
 gradle.rootProject {
-    version = '0.1.1-SNAPSHOT'
+    version = '0.1.3-SNAPSHOT'
 }
