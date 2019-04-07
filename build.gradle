@@ -126,4 +126,12 @@ test {
 
 bootRun {
     environment SPRING_PROFILES_ACTIVE: environment.SPRING_PROFILES_ACTIVE ?: "dev"
+    sourceResources sourceSets.main
+}
+
+processResources {
+    filter {
+        String line -> line.replace('.development.js', '.production.min.js')
+                .replace('react-router-dom.js', 'react-router-dom.min.js')
+    }
 }
