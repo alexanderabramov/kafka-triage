@@ -20,8 +20,10 @@ export class TopicList extends React.Component {
   render() {
     return [
       e('table', null, [
-        e('tr', null, [e('th', null, 'topic'), e('th', null, 'error lag')]),
-        this.state.topics.map((topic) => e(TopicRow, {key: topic.name, topic: topic}))]),
+        e('thead', null,
+            e('tr', null, [e('th', null, 'topic'), e('th', null, 'error lag')])),
+        e('tbody', null,
+            this.state.topics.map((topic) => e(TopicRow, {key: topic.name, topic: topic})))]),
       e('button', {onClick: this.replayAll, disabled: this.state.fetchInProgress || this.state.replayInProgress}, 'replay all') ]
   }
 
