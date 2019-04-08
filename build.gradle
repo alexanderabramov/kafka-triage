@@ -127,6 +127,7 @@ test {
 bootRun {
     environment SPRING_PROFILES_ACTIVE: environment.SPRING_PROFILES_ACTIVE ?: "dev"
     sourceResources sourceSets.main
+    systemProperty 'file.encoding', 'UTF-8'
 }
 
 processResources {
