@@ -65,7 +65,8 @@ export class RecordList extends React.Component {
         e(Column, {
             dataKey: 'value',
             label: 'Value',
-            width: 400
+            width: 400,
+            flexGrow: 1
           }),
         e(Column, {
             cellRenderer: ({cellData, dataKey, parent, rowIndex}) => e(CellMeasurer,
@@ -73,7 +74,8 @@ export class RecordList extends React.Component {
                 e(ReactJson, {collapsed: false, displayDataTypes: false, src: cellData})),
             dataKey: 'headers',
             label: 'Headers',
-            width: 400
+            width: 400,
+            flexGrow: 1
           })
       )
     )
