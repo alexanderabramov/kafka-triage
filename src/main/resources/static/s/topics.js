@@ -19,12 +19,12 @@ export class TopicList extends React.Component {
 
   render() {
     return [
-      e('table', null, [
-        e('thead', null,
-            e('tr', null, [e('th', null, 'topic'), e('th', null, 'error lag')])),
-        e('tbody', null,
+      e('table', {key:'topic-table'}, [
+        e('thead', {key:'thead'},
+            e('tr', null, [e('th', {key:'topic'}, 'topic'), e('th', {key:'lag'}, 'error lag')])),
+        e('tbody', {key:'tbody'},
             this.state.topics.map((topic) => e(TopicRow, {key: topic.name, topic: topic})))]),
-      e('button', {onClick: this.replayAll, disabled: this.state.fetchInProgress || this.state.replayInProgress}, 'replay all') ]
+      e('button', {key:'replayall-button',onClick: this.replayAll, disabled: this.state.fetchInProgress || this.state.replayInProgress}, 'replay all') ]
   }
 
   fetchTopics() {
@@ -71,7 +71,7 @@ export class TopicRow extends React.Component {
   render() {
     const topic = this.props.topic
     return e('tr', null, [
-      e('td', null, e(Link, {to: {pathname: `/topics/${topic.name}/records`} }, topic.name)),
-      e('td', null, topic.lag)]);
+      e('td', {key:'topic'}, e(Link, {to: {pathname: `/topics/${topic.name}/records`} }, topic.name)),
+      e('td', {key:'lag'}, topic.lag)]);
   }
 }
