@@ -44,6 +44,7 @@ class RecordController(
     fun replay(@PathVariable topic: String, @PathVariable partition: Int, @PathVariable offset: Long): ReplayResult {
         val retryTopic = topic.replaceFirst("error-", "retry-")
         val headersToIgnore = listOf("x-original-topic", "x-exception-message", "x-exception-stacktrace")
+        val headersToIgnoreRegex = Regex("^kafka_dlt-.*")
 
         val recordsToReplay = recordRepository.findUnTriagedTo(topic, partition, offset)
         recordRepository.markTriagedTo(topic, partition, offset)
@@ -51,10 +52,13 @@ class RecordController(
         val sendFutures = ArrayList<Future<RecordMetadata>>(recordsToReplay.count())
         for (i in recordsToReplay.indices) {
             val record = recordsToReplay[i]
-            val headers = record.headers.filterNot { headersToIgnore.contains(it.key) }
+            val headers = record.headers
+                    .filterNot { headersToIgnore.contains(it.key) }
+                    .filterNot { headersToIgnoreRegex.containsMatchIn(it.key) }
+
             val value: ByteArray?
             val nativeHeaders: List<org.apache.kafka.common.header.Header>
-            if (headers.all { !it.native }) {
+            if (headers.isNotEmpty() && headers.all { !it.native }) {
                 // this is awkward to use
                 val messageValues = MessageValues(GenericMessage(record.value?.toByteArray() ?: ByteArray(0),
                         MessageHeaders(headers.associateBy({ it.key }, { it.value }))))
