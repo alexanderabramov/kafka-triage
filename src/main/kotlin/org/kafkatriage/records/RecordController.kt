@@ -7,6 +7,8 @@ import org.springframework.cloud.stream.binder.EmbeddedHeaderUtils
 import org.springframework.cloud.stream.binder.MessageValues
 import org.springframework.messaging.MessageHeaders
 import org.springframework.messaging.support.GenericMessage
+import org.springframework.transaction.annotation.Isolation
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.Future
 
 @RestController
+@Transactional(isolation = Isolation.SERIALIZABLE)
 class RecordController(
         val recordRepository: RecordRepository,
         private val kafkaProducer: KafkaProducer<String, ByteArray>
