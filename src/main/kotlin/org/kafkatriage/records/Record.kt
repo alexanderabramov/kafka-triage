@@ -6,7 +6,6 @@ import org.kafkatriage.records.Header.Companion.fromEmbeddedHeader
 import org.kafkatriage.records.Header.Companion.fromKafkaHeader
 import org.springframework.cloud.stream.binder.EmbeddedHeaderUtils
 import org.springframework.messaging.support.GenericMessage
-import java.nio.charset.StandardCharsets
 import javax.persistence.*
 
 @Entity
@@ -47,6 +46,7 @@ data class Record(
             }
             val allHeaders = nativeHeaders.plus(embeddedHeaders)
             val record = Record(topic = cr.topic(), partition = cr.partition(), offset = cr.offset(),
+                    timestamp = cr.timestamp(),
                     key = cr.key()?.toString(),
                     value = valueAsString,
                     headers = allHeaders)
