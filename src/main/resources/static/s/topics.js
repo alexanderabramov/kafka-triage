@@ -1,3 +1,5 @@
+import * as backend from "./backend.js"
+
 const e = React.createElement;
 const ReactRouter = window.ReactRouterDOM
 const Link = ReactRouter.Link
@@ -10,6 +12,7 @@ export class TopicList extends React.Component {
 
     this.onReplayedAll = this.onReplayedAll.bind(this);
     this.onTopicsFetched = this.onTopicsFetched.bind(this);
+    this.replay = this.replay.bind(this);
     this.replayAll = this.replayAll.bind(this);
   }
 
@@ -21,9 +24,9 @@ export class TopicList extends React.Component {
     return [
       e('table', {key:'topic-table'}, [
         e('thead', {key:'thead'},
-            e('tr', null, [e('th', {key:'topic'}, 'topic'), e('th', {key:'lag'}, 'error lag')])),
+            e('tr', null, [e('th', {key:'topic'}, 'topic'), e('th', {key:'lag'}, 'error lag'), e('th', {key:'replay'}, '')])),
         e('tbody', {key:'tbody'},
-            this.state.topics.map((topic) => e(TopicRow, {key: topic.name, topic: topic})))]),
+            this.state.topics.map((topic) => e(TopicRow, {key: topic.name, topic: topic, replay: this.replay, fetchInProgress: this.state.fetchInProgress, replayInProgress: this.state.replayInProgress})))]),
       e('button', {key:'replayall-button',onClick: this.replayAll, disabled: this.state.fetchInProgress || this.state.replayInProgress}, 'replay all') ]
   }
 
@@ -45,16 +48,15 @@ export class TopicList extends React.Component {
 
   replayAll() {
     this.setState({replayInProgress: true})
-    const replayPromises = this.state.topics.map(this.replay)
+    const replayPromises = this.state.topics.map(backend.replay)
     Promise.all(replayPromises)
       .then(this.onReplayedAll)
   }
 
   replay(topic) {
-    return fetch(`/topics/${topic.name}/records/0/0/replay`, { method: 'POST'})
-      .catch(function(ex) {
-        console.log(`replaying ${topic.name} failed`, ex)
-      })
+    this.setState({replayInProgress: true})
+    return backend.replay(topic)
+        .then(this.onReplayedAll)
   }
 
   onReplayedAll() {
@@ -66,12 +68,19 @@ export class TopicList extends React.Component {
 export class TopicRow extends React.Component {
   constructor(props) {
     super(props);
+
+    this.replay = this.replay.bind(this);
+  }
+
+  replay(topic) {
+    this.props.replay(topic)
   }
 
   render() {
     const topic = this.props.topic
     return e('tr', null, [
       e('td', {key:'topic'}, e(Link, {to: {pathname: `/topics/${topic.name}/records`} }, topic.name)),
-      e('td', {key:'lag'}, topic.lag)]);
+      e('td', {key:'lag'}, topic.lag),
+      e('td', {key:'replay'}, e('button', {key:'replay-button', onClick: this.replay.bind(this, topic), disabled: this.props.fetchInProgress || this.props.replayInProgress}, 'replay'))]);
   }
 }
