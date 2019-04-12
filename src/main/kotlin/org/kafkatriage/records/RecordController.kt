@@ -5,6 +5,8 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.springframework.cloud.stream.binder.EmbeddedHeaderUtils
 import org.springframework.cloud.stream.binder.MessageValues
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.messaging.MessageHeaders
 import org.springframework.messaging.support.GenericMessage
 import org.springframework.transaction.annotation.Isolation
@@ -22,8 +24,8 @@ class RecordController(
         private val kafkaProducer: KafkaProducer<String, ByteArray>
 ) {
     @GetMapping("/topics/{topic}/records")
-    fun list(@PathVariable topic: String): List<Record> {
-        return recordRepository.findByTopicAndTriaged(topic)
+    fun list(@PathVariable topic: String, @PageableDefault(sort = ["offset"]) pageable: Pageable): List<Record> {
+        return recordRepository.findByTopicAndTriaged(topic, triaged = false, pageable = pageable)
     }
 
     /**

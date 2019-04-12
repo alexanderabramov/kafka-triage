@@ -6,6 +6,10 @@ server:
 
 spring:
   application.name: kafka-triage
+  data.web:
+    pageable:
+      default-page-size: 10
+      max-page-size: 100
   datasource:
     driver-class-name:
     url:

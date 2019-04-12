@@ -8,6 +8,7 @@ import org.kafkatriage.records.RecordController
 import org.kafkatriage.records.RecordRepository
 import org.kafkatriage.topics.TopicController
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Pageable
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.transaction.annotation.Transactional
 import java.lang.Thread.sleep
@@ -42,7 +43,7 @@ class TransactionalTests @Autowired constructor(
         val topics = topicController.list()
         assertThat(topics).hasOnlyOneElementSatisfying { it.name == "error-test" && it.lag == 1L }
 
-        val records = recordController.list("error-test")
+        val records = recordController.list("error-test", pageable = Pageable.unpaged())
         assertThat(records).hasOnlyOneElementSatisfying { it.topic == "error-test" && it.partition == 0 && it.offset == 0L && it.key == "key1" && it.value == value }
     }
 }

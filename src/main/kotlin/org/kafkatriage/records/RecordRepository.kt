@@ -2,6 +2,7 @@ package org.kafkatriage.records
 
 import org.kafkatriage.topics.Topic
 import org.kafkatriage.topics.TopicPartition
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -15,7 +16,7 @@ interface RecordRepository : JpaRepository<Record, UUID> {
     @Query("select new org.kafkatriage.topics.TopicPartition(r.topic, r.partition, count(*)) from Record r where triaged=false group by r.topic, r.partition")
     fun listPartitions(): List<TopicPartition>
 
-    fun findByTopicAndTriaged(topic: String, triaged: Boolean = false): List<Record>
+    fun findByTopicAndTriaged(topic: String, triaged: Boolean, pageable: Pageable): List<Record>
 
     @Query("select r from Record r where topic=:topic and partition=:partition and offset<=:offset and triaged=false")
     fun findUnTriagedTo(topic: String, partition: Int, offset: Long): List<Record>
