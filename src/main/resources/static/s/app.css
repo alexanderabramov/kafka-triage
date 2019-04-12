@@ -5,3 +5,7 @@ html, body, #app {
 table {
     text-align: center;
 }
+
+a[target='_blank']::after {
+    content: ' ⧉';
+}

@@ -24,7 +24,7 @@ export class TopicList extends React.Component {
     return [
       e('table', {key:'topic-table'}, [
         e('thead', {key:'thead'},
-            e('tr', null, [e('th', {key:'topic'}, 'topic'), e('th', {key:'lag'}, 'error lag'), e('th', {key:'replay'}, '')])),
+            e('tr', null, [e('th', {key:'topic'}, 'topic'), e('th', {key:'lag'}, 'error lag'), e('th', {key:'json'}, 'as json'), e('th', {key:'replay'}, '')])),
         e('tbody', {key:'tbody'},
             this.state.topics.map((topic) => e(TopicRow, {key: topic.name, topic: topic, replay: this.replay, fetchInProgress: this.state.fetchInProgress, replayInProgress: this.state.replayInProgress})))]),
       e('button', {key:'replayall-button',onClick: this.replayAll, disabled: this.state.fetchInProgress || this.state.replayInProgress}, 'replay all') ]
@@ -81,6 +81,7 @@ export class TopicRow extends React.Component {
     return e('tr', null, [
       e('td', {key:'topic'}, e(Link, {to: {pathname: `/topics/${topic.name}/records`} }, topic.name)),
       e('td', {key:'lag'}, topic.lag),
+      e('td', {key:'topic-json'}, e('a', {href: `/topics/${topic.name}/records`, target: '_blank' }, 'json')),
       e('td', {key:'replay'}, e('button', {key:'replay-button', onClick: this.replay.bind(this, topic), disabled: this.props.fetchInProgress || this.props.replayInProgress}, 'replay'))]);
   }
 }
