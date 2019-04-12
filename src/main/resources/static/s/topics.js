@@ -13,7 +13,6 @@ export class TopicList extends React.Component {
     this.onReplayedAll = this.onReplayedAll.bind(this);
     this.onTopicsFetched = this.onTopicsFetched.bind(this);
     this.replay = this.replay.bind(this);
-    this.replayAll = this.replayAll.bind(this);
   }
 
   componentDidMount() {
@@ -21,13 +20,11 @@ export class TopicList extends React.Component {
   }
 
   render() {
-    return [
-      e('table', {key:'topic-table'}, [
+    return e('table', {key:'topic-table'}, [
         e('thead', {key:'thead'},
             e('tr', null, [e('th', {key:'topic'}, 'topic'), e('th', {key:'lag'}, 'error lag'), e('th', {key:'json'}, 'as json'), e('th', {key:'replay'}, '')])),
         e('tbody', {key:'tbody'},
-            this.state.topics.map((topic) => e(TopicRow, {key: topic.name, topic: topic, replay: this.replay, fetchInProgress: this.state.fetchInProgress, replayInProgress: this.state.replayInProgress})))]),
-      e('button', {key:'replayall-button',onClick: this.replayAll, disabled: this.state.fetchInProgress || this.state.replayInProgress}, 'replay all') ]
+            this.state.topics.map((topic) => e(TopicRow, {key: topic.name, topic: topic, replay: this.replay, fetchInProgress: this.state.fetchInProgress, replayInProgress: this.state.replayInProgress})))])
   }
 
   fetchTopics() {
@@ -44,13 +41,6 @@ export class TopicList extends React.Component {
 
   onTopicsFetched(json) {
     this.setState({fetchInProgress: false, topics: json})
-  }
-
-  replayAll() {
-    this.setState({replayInProgress: true})
-    const replayPromises = this.state.topics.map(backend.replay)
-    Promise.all(replayPromises)
-      .then(this.onReplayedAll)
   }
 
   replay(topic) {
