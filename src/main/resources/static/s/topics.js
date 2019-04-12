@@ -20,7 +20,7 @@ export class TopicList extends React.Component {
   }
 
   render() {
-    return e('table', {key:'topic-table'}, [
+    return e('table', {key:'topic-table', class:'pure-table'}, [
         e('thead', {key:'thead'},
             e('tr', null, [e('th', {key:'topic'}, 'topic'), e('th', {key:'lag'}, 'error lag'), e('th', {key:'json'}, 'as json'), e('th', {key:'replay'}, '')])),
         e('tbody', {key:'tbody'},
