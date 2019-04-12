@@ -6,10 +6,8 @@ logging.level:
 
 spring:
   datasource:
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:db/kafka-triage;MODE=PostgreSQL
-    username: sa
-    password:
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+    url: jdbc:tc:postgresql:9.6-alpine:///kafka-triage
   flyway:
     enabled: false
   jpa:

@@ -45,7 +45,6 @@ repositories {
 
 configurations {
     all {
-        exclude group: 'junit', module: 'junit'
         exclude module: 'spring-boot-starter-logging'
     }
 }
@@ -61,6 +60,7 @@ dependencies {
         mockitoKotlinVersion = '1.6.0'
         springCloudStreamVersion = '2.1.2.RELEASE'
         springKafkaVersion = '2.2.5.RELEASE'
+        testContainersVersion = '1.11.1'
     }
 
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
@@ -107,6 +107,9 @@ dependencies {
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation "org.springframework.kafka:spring-kafka-test:$springKafkaVersion"
+
+    testImplementation "org.testcontainers:junit-jupiter:$testContainersVersion"
+    testImplementation "org.testcontainers:postgresql:$testContainersVersion"
 
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
 }
