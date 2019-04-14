@@ -11,13 +11,14 @@ spring:
       default-page-size: 10
       max-page-size: 100
   datasource:
-    driver-class-name:
+    driver-class-name: org.postgresql.Driver
     url:
     username:
     password:
   jackson:
     default-property-inclusion: always
   jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: validate
   flyway:

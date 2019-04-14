@@ -26,3 +26,6 @@ hs_err_pid*
 *.iml
 *.ipr
 /out/
+
+# local configuration
+src/main/resources/application-dev.yml

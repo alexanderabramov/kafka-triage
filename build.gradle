@@ -89,8 +89,6 @@ dependencies {
 
     runtime "org.glassfish.jaxb:jaxb-runtime:$jaxbGlassfishVersion"
 
-    runtime 'com.h2database:h2'
-
     runtime 'org.postgresql:postgresql'
 
     // Test

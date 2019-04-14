@@ -1,6 +1,17 @@
 # kafka-triage ![build status](https://travis-ci.org/alexanderabramov/kafka-triage.svg?branch=master)
 Triage records in Kafka dead letter queue (DLQ) topics
 
+## Local development
+
+Get docker and docker compose.
+
+```
+# from ./docker/
+./up.sh
+```
+
+Copy `application-dev-example.yml` to `application-dev.yml` and adjust as necessary.
+
 ## Database setup on GCP Kubernetes
 
 ### Create a GCP Cloud SQL instance

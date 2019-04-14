@@ -1,0 +1,22 @@
+version: "3.7"
+services:
+  kafka:
+    build: ./kafka
+    depends_on: [zookeeper]
+    environment:
+      - "EXTERNAL_IP"
+    init: true
+    ports:
+      - "9092:9092"
+  postgres:
+    environment:
+      - "POSTGRES_USER=kafka-triage"
+    image: postgres:9.6-alpine
+    init: true
+    ports:
+      - "5432:5432"
+  zookeeper:
+    image: zookeeper:3.4.14
+    init: true
+    ports:
+      - "2181:2181"
