@@ -6,6 +6,7 @@ logging.level:
 #  org.apache.kafka.clients.consumer.internals.ConsumerCoordinator: DEBUG
 #  org.apache.kafka.clients.producer.KafkaProducer: DEBUG
 #  org.hibernate: DEBUG
+  org.hibernate.stat: debug
 #  org.hibernate.resource.jdbc.internal: TRACE
 #  org.springframework.transaction: TRACE
 
@@ -24,6 +25,10 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+        generate_statistics: true
     show-sql: true
   kafka:
     bootstrap-servers: localhost:9092
