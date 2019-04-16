@@ -15,6 +15,7 @@ spring:
     url:
     username:
     password:
+    separator: ';;'
   jackson:
     default-property-inclusion: always
   jpa:

@@ -9,6 +9,7 @@ services:
     ports:
       - "9092:9092"
   postgres:
+    command: postgres -c 'shared_preload_libraries=pg_stat_statements' -c 'pg_stat_statements.save=off' -c 'pg_stat_statements.max=100'
     environment:
       - "POSTGRES_USER=kafka-triage"
     image: postgres:9.6-alpine
