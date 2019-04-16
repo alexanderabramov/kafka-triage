@@ -9,6 +9,7 @@ import org.springframework.messaging.support.GenericMessage
 import javax.persistence.*
 
 @Entity
+@Table(indexes = [Index(name = "record_triaged_idx", columnList = "triaged")])
 data class Record(
         val topic: String,
         val partition: Int,
