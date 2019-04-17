@@ -2,6 +2,9 @@ package org.kafkatriage.records
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.hibernate.annotations.BatchSize
+import org.hibernate.annotations.Fetch
+import org.hibernate.annotations.FetchMode
 import org.kafkatriage.records.Header.Companion.fromEmbeddedHeader
 import org.kafkatriage.records.Header.Companion.fromKafkaHeader
 import org.springframework.cloud.stream.binder.EmbeddedHeaderUtils
@@ -17,7 +20,10 @@ data class Record(
         val timestamp: Long? = null,
         val key: String?,
         val value: String?,
-        @OneToMany(mappedBy = "record", cascade = [CascadeType.ALL]) val headers: List<Header> = listOf(),
+
+        @BatchSize(size = 100) @Fetch(FetchMode.SELECT)
+        @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER, mappedBy = "record") val headers: List<Header> = listOf(),
+
         var triaged: Boolean = false,
         var replayedOffset: Long? = null,
         @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @JsonIgnore val id: Int? = null
