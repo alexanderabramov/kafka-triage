@@ -25,10 +25,10 @@ data class Record(
 
     companion object {
         fun <K, V> fromConsumerRecord(cr: ConsumerRecord<K, V>): Record {
-            val value = cr.value() as ByteArray
+            val value = cr.value() as ByteArray?
             var embeddedHeaders: List<Header> = listOf()
             var embeddedPayload: ByteArray? = null
-            if (EmbeddedHeaderUtils.mayHaveEmbeddedHeaders(value)) {
+            if (value != null && EmbeddedHeaderUtils.mayHaveEmbeddedHeaders(value)) {
                 try {
                     // why does it have to be private?
                     val springMessage = GenericMessage<ByteArray>(value)
@@ -40,10 +40,10 @@ data class Record(
                 }
             }
             val nativeHeaders = cr.headers().map(::fromKafkaHeader)
-            val valueAsString = if (embeddedPayload != null) {
-                String(embeddedPayload)
-            } else {
-                String(value)
+            val valueAsString = when {
+                embeddedPayload != null -> String(embeddedPayload)
+                value != null -> String(value)
+                else -> null
             }
             val allHeaders = nativeHeaders.plus(embeddedHeaders)
             val record = Record(topic = cr.topic(), partition = cr.partition(), offset = cr.offset(),
