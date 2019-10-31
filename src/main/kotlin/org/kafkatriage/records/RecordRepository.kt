@@ -22,7 +22,7 @@ interface RecordRepository : JpaRepository<Record, UUID> {
     fun findUnTriagedTo(topic: String, partition: Int, offset: Long): List<Record>
 
     @Modifying
-    @Query("update Record r set triaged=true where topic=:topic and partition=:partition and offset<=:offset")
+    @Query("update Record r set triaged=true where triaged=false and topic=:topic and partition=:partition and offset<=:offset")
     @Transactional
     fun markTriagedTo(topic: String, partition: Int, offset: Long)
 
