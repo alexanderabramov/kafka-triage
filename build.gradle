@@ -58,7 +58,7 @@ dependencies {
         log4jVersion = '2.11.2'
         mockitoVersion = '2.27.0'
         mockitoKotlinVersion = '1.6.0'
-        springCloudStreamVersion = '2.1.2.RELEASE'
+        springCloudStreamVersion = '3.0.3.RELEASE'
         springKafkaVersion = '2.2.6.RELEASE'
         testContainersVersion = '1.11.1'
     }
