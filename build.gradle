@@ -59,7 +59,7 @@ dependencies {
         mockitoVersion = '2.27.0'
         mockitoKotlinVersion = '1.6.0'
         springCloudStreamVersion = '2.1.2.RELEASE'
-        springKafkaVersion = '2.2.6.RELEASE'
+        springKafkaVersion = '2.6.1'
         testContainersVersion = '1.11.1'
     }
 
