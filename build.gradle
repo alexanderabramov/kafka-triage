@@ -60,7 +60,7 @@ dependencies {
         mockitoKotlinVersion = '1.6.0'
         springCloudStreamVersion = '2.1.2.RELEASE'
         springKafkaVersion = '2.2.6.RELEASE'
-        testContainersVersion = '1.11.1'
+        testContainersVersion = '1.15.0'
     }
 
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
