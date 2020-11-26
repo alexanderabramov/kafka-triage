@@ -53,7 +53,7 @@ ext['jUnitVersion'] = '5.4.1'
 
 dependencies {
     ext {
-        jaxbGlassfishVersion = '2.3.2'
+        jaxbGlassfishVersion = '3.0.0'
         kafkaVersion = '2.2.1'
         log4jVersion = '2.11.2'
         mockitoVersion = '2.27.0'
