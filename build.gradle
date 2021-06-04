@@ -56,7 +56,7 @@ dependencies {
         jaxbGlassfishVersion = '2.3.2'
         kafkaVersion = '2.2.1'
         log4jVersion = '2.11.2'
-        mockitoVersion = '2.27.0'
+        mockitoVersion = '3.11.0'
         mockitoKotlinVersion = '1.6.0'
         springCloudStreamVersion = '2.1.2.RELEASE'
         springKafkaVersion = '2.2.6.RELEASE'
